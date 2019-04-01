@@ -9,9 +9,9 @@ using namespace eosio;
 using std::string;
 
 namespace enterprise {
-   class [[eosio::contract]] infpool : public contract {
+   class [[eosio::contract]] rewardspool : public contract {
       public:
-         infpool(name receiver, name code, datastream<const char*> ds) : contract(receiver, code, ds) { }
+         rewardspool(name receiver, name code, datastream<const char*> ds) : contract(receiver, code, ds) { }
 
          [[eosio::action]]
          void test() {
@@ -19,8 +19,10 @@ namespace enterprise {
          }
 
       private:
-         
+         struct [[eosio::table]] reward_action {
+
+         }
    };
 }
 
-EOSIO_DISPATCH(enterprise::infpool, (test))
+EOSIO_DISPATCH(enterprise::rewardspool, (test))
