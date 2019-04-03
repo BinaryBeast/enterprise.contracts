@@ -55,6 +55,11 @@ namespace enterprise {
             current_state.remove();
          }
 
+         [[eosio::action]]
+         void payrewards(asset inflation_asset) {
+            pay_rewards(inflation_asset);
+         }
+
       private:
          struct [[eosio::table]] state {
             unsigned long payable_accounts;
@@ -85,6 +90,20 @@ namespace enterprise {
             c_state.payable_accounts = c_state.payable_accounts + 1;
 
             current_state.set(c_state, _self);
+         }
+
+         void pay_rewards(asset inflation_asset) {
+            action_accounts act_accounts(_self, _self.value);
+
+            auto c_state = current_state.get();
+            auto rewards_per_action = inflation_asset.amount / c_state.payable_actions;
+
+            for (auto &act_account : act_accounts) {
+               auto reward_amount = rewards_per_action * act_account.payable_actions;
+               asset reward_asset(reward_amount, inflation_asset.symbol);
+
+               //SEND_INLINE_ACTION(*this, issue, { { _self, name("active") } }, { pool.account, split_asset, "Inflation Distribution" });
+            }
          }
    };
 }
