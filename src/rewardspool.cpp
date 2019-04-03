@@ -1,7 +1,7 @@
-#include <eosiolib/eosio.hpp>
-#include <eosiolib/asset.hpp>
-#include <eosiolib/transaction.hpp>
-#include <eosiolib/singleton.hpp>
+#include <eosio/eosio.hpp>
+#include <eosio/asset.hpp>
+//#include <eosio/transaction.hpp>
+#include <eosio/singleton.hpp>
 
 #define DEBUG
 
@@ -60,7 +60,7 @@ namespace enterprise {
             unsigned long payable_accounts;
             unsigned long payable_actions;
          };
-         typedef eosio::singleton<"state"_n, state> s_state;
+         typedef eosio::singleton<name("state"), state> s_state;
          s_state current_state;
 
          struct [[eosio::table]] action_account {
@@ -69,7 +69,7 @@ namespace enterprise {
 
             uint64_t primary_key() const { return account.value; }
          };
-         typedef eosio::multi_index<"actionaccs"_n, action_account> action_accounts;
+         typedef eosio::multi_index<name("actionaccs"), action_account> action_accounts;
 
          void increment_payable_actions() {
             auto c_state = current_state.get_or_create(_self, state { 0, 0 });
@@ -88,5 +88,3 @@ namespace enterprise {
          }
    };
 }
-
-EOSIO_DISPATCH(enterprise::rewardspool, (addaccaction)(setpayables)(incpayables)(clearstate))

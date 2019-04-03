@@ -1,7 +1,8 @@
-#include <eosiolib/eosio.hpp>
-#include <eosiolib/asset.hpp>
-#include <eosiolib/transaction.hpp>
-#include <eosiolib/singleton.hpp>
+#include <eosio/eosio.hpp>
+#include <eosio/asset.hpp>
+#include <eosio/transaction.hpp>
+#include <eosio/singleton.hpp>
+#include <eosio/system.hpp>
 
 #define DEBUG
 
@@ -18,14 +19,14 @@ namespace enterprise {
             require_auth(_self);
 
             auto sym = maximum_supply.symbol;
-            eosio_assert(sym.is_valid(), "invalid symbol name");
-            eosio_assert(maximum_supply.is_valid(), "invalid supply");
-            eosio_assert(maximum_supply.amount > 0, "max-supply must be positive");
+            check(sym.is_valid(), "invalid symbol name");
+            check(maximum_supply.is_valid(), "invalid supply");
+            check(maximum_supply.amount > 0, "max-supply must be positive");
 
             // check for already existing symbol
             stats statstable(_self, sym.code().raw());
             auto existing = statstable.find(sym.code().raw());
-            eosio_assert(existing == statstable.end(), "token with symbol already exists");
+            check(existing == statstable.end(), "token with symbol already exists");
 
             // add new currency in the stats table
             statstable.emplace(_self, [&](auto& s) {
@@ -39,22 +40,22 @@ namespace enterprise {
          void issue(name to, asset quantity, string memo) {
             // check if symbol is valid and memo does not exceeds 256 bytes
             auto sym = quantity.symbol;
-            eosio_assert(sym.is_valid(), "invalid symbol name");
-            eosio_assert(memo.size() <= 256, "memo has more than 256 bytes");
+            check(sym.is_valid(), "invalid symbol name");
+            check(memo.size() <= 256, "memo has more than 256 bytes");
 
             // check if token with this symbol name exists, and get iterator_
             stats statstable(_self, sym.code().raw());
             auto existing = statstable.find(sym.code().raw());
-            eosio_assert(existing != statstable.end(), "token with symbol does not exist, create token before issue");
+            check(existing != statstable.end(), "token with symbol does not exist, create token before issue");
             const auto& st = *existing;
 
             // check for the authority of issuer and valid quantity_require_auth( st.issuer );
             require_auth(st.issuer);
-            eosio_assert(quantity.is_valid(), "invalid quantity");
+            check(quantity.is_valid(), "invalid quantity");
             auto greaterZeroErrorMessage = ("must issue positive quantity " + std::to_string(quantity.amount)).c_str();
-            eosio_assert(quantity.amount > 0, greaterZeroErrorMessage);
-            eosio_assert(quantity.symbol == st.supply.symbol, "symbol precision mismatch");
-            eosio_assert(quantity.amount <= st.max_supply.amount - st.supply.amount, "quantity exceeds available supply");
+            check(quantity.amount > 0, greaterZeroErrorMessage);
+            check(quantity.symbol == st.supply.symbol, "symbol precision mismatch");
+            check(quantity.amount <= st.max_supply.amount - st.supply.amount, "quantity exceeds available supply");
 
             // modify records
             statstable.modify(st, same_payer, [&](auto& s) {
@@ -64,24 +65,24 @@ namespace enterprise {
             add_balance(st.issuer, quantity, st.issuer);
 
             if (to != st.issuer) {
-               SEND_INLINE_ACTION(*this, transfer, { { st.issuer, "active"_n } }, { st.issuer, to, quantity, memo });
+               SEND_INLINE_ACTION(*this, transfer, { { st.issuer, name("active") } }, { st.issuer, to, quantity, memo });
             }
          }
 
          [[eosio::action]]
          void burn(asset quantity, string memo) {
             auto sym = quantity.symbol;
-            eosio_assert( sym.is_valid(), "invalid symbol name" );
-            eosio_assert( memo.size() <= 256, "memo has more than 256 bytes" );
+            check( sym.is_valid(), "invalid symbol name" );
+            check( memo.size() <= 256, "memo has more than 256 bytes" );
 
             stats statstable( _self, sym.code().raw() );auto existing = statstable.find( sym.code().raw() );
-            eosio_assert( existing != statstable.end(), "token with symbol does not exist" );
+            check( existing != statstable.end(), "token with symbol does not exist" );
             const  auto& st = *existing;
 
             require_auth( st.issuer );
-            eosio_assert( quantity.is_valid(), "invalid quantity" );
-            eosio_assert( quantity.amount > 0, "must burn positive quantity" );
-            eosio_assert( quantity.symbol == st.supply.symbol, "symbol precision mismatch" );
+            check( quantity.is_valid(), "invalid quantity" );
+            check( quantity.amount > 0, "must burn positive quantity" );
+            check( quantity.symbol == st.supply.symbol, "symbol precision mismatch" );
 
             statstable.modify( st, same_payer, [&]( auto& s ) {
                s.supply -= quantity;
@@ -92,9 +93,9 @@ namespace enterprise {
 
          [[eosio::action]]
          void transfer(name from, name to, asset quantity, string memo) {
-            eosio_assert(from != to, "cannot transfer to self");
+            check(from != to, "cannot transfer to self");
             require_auth(from);
-            eosio_assert(is_account(to), "to account does not exist");
+            check(is_account(to), "to account does not exist");
             auto sym = quantity.symbol.code();
             stats statstable(_self, sym.raw());
             const  auto& st = statstable.get(sym.raw());
@@ -102,10 +103,10 @@ namespace enterprise {
             require_recipient(from);
             require_recipient(to);
 
-            eosio_assert(quantity.is_valid(), "invalid quantity");
-            eosio_assert(quantity.amount > 0, "must transfer positive quantity");
-            eosio_assert(quantity.symbol == st.supply.symbol, "symbol precision mismatch");
-            eosio_assert(memo.size() <= 256, "memo has more than 256 bytes");
+            check(quantity.is_valid(), "invalid quantity");
+            check(quantity.amount > 0, "must transfer positive quantity");
+            check(quantity.symbol == st.supply.symbol, "symbol precision mismatch");
+            check(memo.size() <= 256, "memo has more than 256 bytes");
 
             auto payer = has_auth(to) ? to : from;
 
@@ -119,7 +120,7 @@ namespace enterprise {
             auto current_inflator = s_inflator.get();
 
             auto inflation_asset = inflate_max_supply(quantity, current_inflator.inflation_percent);
-            //eosio_assert(false, ("Asset: " + inflation_asset.to_string() + " | Amount: " + std::to_string(inflation_asset.amount)).c_str());
+            //check(false, ("Asset: " + inflation_asset.to_string() + " | Amount: " + std::to_string(inflation_asset.amount)).c_str());
             distribute_inflation(inflation_asset);
          }
 
@@ -146,16 +147,16 @@ namespace enterprise {
             eosio::transaction tx;
 
             tx.actions.emplace_back(
-               permission_level { _self, "active"_n },
+               permission_level { _self, name("active") },
                _self,
-               "stainflation"_n,
+               name("stainflation"),
                std::make_tuple(quantity)
             );
 
             tx.delay_sec = current_inflator.frequency_seconds;
-            tx.send(now(), _self);
+            tx.send(current_time_point().sec_since_epoch(), _self);
 
-            SEND_INLINE_ACTION(*this, inflate, { { _self, "active"_n } }, { quantity });
+            SEND_INLINE_ACTION(*this, inflate, { { _self, name("active") } }, { quantity });
          }
 
          [[eosio::action]]
@@ -175,14 +176,14 @@ namespace enterprise {
             int poolsSize = pools.size();
             int percentagesSize = distribution_percentages.size();
             const char* poolsErrorMessage = ("Must be equal numbers of pools & distribution percentages | Pools: " + std::to_string(poolsSize) + " | Percentages: " + std::to_string(percentagesSize)).c_str();
-            eosio_assert(poolsSize == percentagesSize, poolsErrorMessage);
+            check(poolsSize == percentagesSize, poolsErrorMessage);
 
             double totalPercentage = 0;
             for (auto &percentage : distribution_percentages) {
                totalPercentage += percentage;
             }
             const char* percentageErrorMessage = ("Distrbution percentages must add up to 100 percent | Percentage: " + std::to_string(totalPercentage)).c_str();
-            eosio_assert(totalPercentage == 100, percentageErrorMessage);
+            check(totalPercentage == 100, percentageErrorMessage);
 
             inflation_pools infpools(_self, _self.value);
             auto oldpool = infpools.begin();
@@ -207,7 +208,7 @@ namespace enterprise {
             bool can_inflate;
             double inflation_percent;
          };
-         typedef eosio::singleton<"inflator"_n, inflator> sinflator;
+         typedef eosio::singleton<name("inflator"), inflator> sinflator;
          sinflator s_inflator;
 
          struct [[eosio::table]] account {
@@ -215,7 +216,7 @@ namespace enterprise {
 
             uint64_t primary_key() const { return balance.symbol.code().raw(); }
          };
-         typedef eosio::multi_index<"accounts"_n, account> accounts;
+         typedef eosio::multi_index<name("accounts"), account> accounts;
 
          struct [[eosio::table]] currency_stats {
             asset  supply;
@@ -224,7 +225,7 @@ namespace enterprise {
 
             uint64_t primary_key() const { return supply.symbol.code().raw(); }
          };
-         typedef eosio::multi_index<"stats"_n, currency_stats> stats;
+         typedef eosio::multi_index<name("stats"), currency_stats> stats;
 
          struct [[eosio::table]] inflation_pool {
             name account;
@@ -232,13 +233,13 @@ namespace enterprise {
 
             uint64_t primary_key() const { return account.value; }
          };
-         typedef eosio::multi_index<"inflationpls"_n, inflation_pool> inflation_pools;
+         typedef eosio::multi_index<name("inflationpls"), inflation_pool> inflation_pools;
 
          void sub_balance(name owner, asset value) {
             accounts from_acnts(_self, owner.value);
 
             const  auto& from = from_acnts.get(value.symbol.code().raw(), "no balance object found");
-            eosio_assert(from.balance.amount >= value.amount, "overdrawn balance");
+            check(from.balance.amount >= value.amount, "overdrawn balance");
 
             from_acnts.modify(from, owner, [&](auto& a) {
                a.balance -= value;
@@ -263,11 +264,11 @@ namespace enterprise {
 
          asset inflate_max_supply(asset quantity, double percentage) {
             auto sym = quantity.symbol;
-            eosio_assert(sym.is_valid(), "invalid symbol name");
+            check(sym.is_valid(), "invalid symbol name");
 
             stats statstable(_self, sym.code().raw());
             auto existing = statstable.find(sym.code().raw());
-            eosio_assert(existing != statstable.end(), "token with symbol does not exist, create token before issue");
+            check(existing != statstable.end(), "token with symbol does not exist, create token before issue");
             const auto& st = *existing;
 
             require_auth(st.issuer);
@@ -291,10 +292,8 @@ namespace enterprise {
                auto inflation = inflation_asset.amount * (pool.percentage / 100);
                asset split_asset(inflation, inflation_asset.symbol);
 
-               SEND_INLINE_ACTION(*this, issue, { { _self, "active"_n } }, { pool.account, split_asset, "Inflation Distribution" });
+               SEND_INLINE_ACTION(*this, issue, { { _self, name("active") } }, { pool.account, split_asset, "Inflation Distribution" });
             }
          }
    };
 }
-
-EOSIO_DISPATCH(enterprise::token, (create)(issue)(transfer)(burn)(inflate)(setinflation)(stainflation)(stoinflation)(setinflpools))
