@@ -1,8 +1,8 @@
-#include <eosio/eosio.hpp>
-#include <eosio/asset.hpp>
-#include <eosio/transaction.hpp>
-#include <eosio/singleton.hpp>
-#include <eosio/system.hpp>
+#include <eosiolib/eosio.hpp>
+#include <eosiolib/asset.hpp>
+#include <eosiolib/transaction.hpp>
+#include <eosiolib/singleton.hpp>
+#include <eosiolib/system.hpp>
 
 #define DEBUG
 
@@ -154,7 +154,7 @@ namespace enterprise {
             );
 
             tx.delay_sec = current_inflator.frequency_seconds;
-            tx.send(current_time_point().sec_since_epoch(), _self);
+            tx.send(now(), _self);
 
             SEND_INLINE_ACTION(*this, inflate, { { _self, name("active") } }, { quantity });
          }

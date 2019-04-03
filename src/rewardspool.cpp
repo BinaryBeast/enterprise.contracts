@@ -1,7 +1,7 @@
-#include <eosio/eosio.hpp>
-#include <eosio/asset.hpp>
-//#include <eosio/transaction.hpp>
-#include <eosio/singleton.hpp>
+#include <eosiolib/eosio.hpp>
+#include <eosiolib/asset.hpp>
+#include <eosiolib/transaction.hpp>
+#include <eosiolib/singleton.hpp>
 
 #define DEBUG
 
