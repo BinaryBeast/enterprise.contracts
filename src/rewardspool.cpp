@@ -2,6 +2,9 @@
 #include <eosiolib/asset.hpp>
 #include <eosiolib/transaction.hpp>
 #include <eosiolib/singleton.hpp>
+#include <eosiolib/print.hpp>
+
+#include "token.cpp"
 
 #define DEBUG
 
@@ -17,6 +20,7 @@ namespace enterprise {
          void addaccaction(name account) {
             action_accounts act_account(_self, _self.value);
             auto existing = act_account.find(account.value);
+            print("Action added for:  ", name(account), "\n");
 
             if (existing == act_account.end()) {
                act_account.emplace(_self, [&](auto& aa) {
@@ -97,12 +101,15 @@ namespace enterprise {
 
             auto c_state = current_state.get();
             auto rewards_per_action = inflation_asset.amount / c_state.payable_actions;
+            print("Rewards Per Action == ", rewards_per_action, "\n");
 
             for (auto &act_account : act_accounts) {
                auto reward_amount = rewards_per_action * act_account.payable_actions;
                asset reward_asset(reward_amount, inflation_asset.symbol);
+               print("Paying Reward (", reward_asset.to_string(), ") to account ", name(act_account.account), "\n");
 
-               //SEND_INLINE_ACTION(*this, issue, { { _self, name("active") } }, { pool.account, split_asset, "Inflation Distribution" });
+               token::transfer_action transfer(name("gre111111111"), {get_self(), name("active")});
+               transfer.send(_self, act_account.account, reward_asset, "Rewards");
             }
          }
    };

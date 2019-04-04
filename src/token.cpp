@@ -93,6 +93,7 @@ namespace enterprise {
 
          [[eosio::action]]
          void transfer(name from, name to, asset quantity, string memo) {
+            print("Transferring ", quantity.to_string(), " from ", name(from), " to ", name(to), "\n");
             check(from != to, "cannot transfer to self");
             require_auth(from);
             check(is_account(to), "to account does not exist");
@@ -113,6 +114,8 @@ namespace enterprise {
             sub_balance(from, quantity);
             add_balance(to, quantity, payer);
          }
+
+         using transfer_action = action_wrapper<name("transfer"), &token::transfer>;
 
          [[eosio::action]]
          void inflate(asset quantity) {
