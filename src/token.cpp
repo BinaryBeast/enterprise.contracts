@@ -123,7 +123,7 @@ namespace enterprise {
             auto current_inflator = s_inflator.get();
 
             auto inflation_asset = inflate_max_supply(quantity, current_inflator.inflation_percent);
-            //check(false, ("Asset: " + inflation_asset.to_string() + " | Amount: " + std::to_string(inflation_asset.amount)).c_str());
+
             distribute_inflation(inflation_asset);
          }
 
