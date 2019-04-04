@@ -64,6 +64,15 @@ namespace enterprise {
             pay_rewards(inflation_asset);
          }
 
+         [[eosio::on_notify("gre111111111::issinflation")]]
+         void on_inflation(name to, asset quantity) {
+            print("Inflation issued to ", name(to), " totalling ", quantity.to_string(), "\n");
+            if (to == _self) {
+               print("This is my inflation");
+               pay_rewards(quantity);
+            }
+         }
+
       private:
          struct [[eosio::table]] state {
             unsigned long payable_accounts;

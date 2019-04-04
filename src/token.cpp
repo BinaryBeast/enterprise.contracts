@@ -115,8 +115,6 @@ namespace enterprise {
             add_balance(to, quantity, payer);
          }
 
-         using transfer_action = action_wrapper<name("transfer"), &token::transfer>;
-
          [[eosio::action]]
          void inflate(asset quantity) {
             require_auth(_self);
@@ -173,6 +171,11 @@ namespace enterprise {
          }
 
          [[eosio::action]]
+         void issinflation(name to, asset quantity) {
+            SEND_INLINE_ACTION(*this, issue, { { _self, name("active") } }, { to, quantity, "Inflation Distribution" });
+         }
+
+         [[eosio::action]]
          void setinflpools(std::vector<name> pools, std::vector<double> distribution_percentages) {
             require_auth(_self);
 
@@ -203,6 +206,8 @@ namespace enterprise {
                });
             }
          }
+
+         using transfer_action = action_wrapper<name("transfer"), &token::transfer>;
 
       private:
          struct [[eosio::table]] inflator {
@@ -295,7 +300,7 @@ namespace enterprise {
                auto inflation = inflation_asset.amount * (pool.percentage / 100);
                asset split_asset(inflation, inflation_asset.symbol);
 
-               SEND_INLINE_ACTION(*this, issue, { { _self, name("active") } }, { pool.account, split_asset, "Inflation Distribution" });
+               SEND_INLINE_ACTION(*this, issinflation, { { _self, name("active") } }, { pool.account, split_asset });
             }
          }
    };
