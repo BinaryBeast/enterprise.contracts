@@ -1,0 +1,19 @@
+{
+  "main": "src\\token.cpp",
+  "contract": "token",
+  "include": "",
+  "cdt": "",
+  "output": "",
+  "scripts": {
+    "build": ""
+  },
+  "deploy": {
+    "mainnet": "",
+    "kylin": "",
+    "jungle": "gre111111111",
+    "local": "gre111111111"
+  },
+  "test": {
+    "npmClient": ""
+  }
+}
