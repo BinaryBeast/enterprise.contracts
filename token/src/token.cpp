@@ -151,6 +151,7 @@ ACTION token::stoinflation() {
 }
 
 ACTION token::issinflation(name to, asset quantity) {
+  require_recipient(to);
   token::issue_action action(_self, { _self, name("active") });
   action.send(to, quantity, "Inflation Distribution");
 }

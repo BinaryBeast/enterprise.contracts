@@ -20,8 +20,10 @@ CONTRACT rewardspool : public contract {
     ACTION clearstate();
     ACTION payrewards(asset inflation_asset);
     
-    //[[eosio::on_notify("gre111111111::issinflation")]]
-    //void on_inflation(name to, asset quantity);
+    [[eosio::on_notify("gre111111111::issinflation")]]
+    void inflation(name to, asset quantity);
+
+    using issinflation_action = action_wrapper<"inflation"_n, &rewardspool::inflation>;
   
   private:
 

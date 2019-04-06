@@ -43,14 +43,15 @@ ACTION rewardspool::payrewards(asset inflation_asset) {
   pay_rewards(inflation_asset);
 }
 
-//[[eosio::on_notify("gre111111111::issinflation")]]
-//void on_inflation(name to, asset quantity) {
-//  print("Inflation issued to ", name(to), " totalling ", quantity.to_string(), "\n");
-//  if (to == _self) {
-//     print("This is my inflation");
-//     pay_rewards(quantity);
-//  }
-//}
+void rewardspool::inflation (name to, asset quantity) {
+  auto self = get_self();
+  print("Inflation issued to ", name(to), " totalling ", quantity.to_string(), "\n");
+
+  if (to == self) {
+    print("This is my inflation\n");
+    pay_rewards(quantity);
+  }
+}
 
 void rewardspool::increment_payable_actions() {
   auto c_state = current_state.get_or_create(_self, state { 0, 0 });
