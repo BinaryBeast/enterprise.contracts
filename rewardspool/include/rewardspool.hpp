@@ -60,9 +60,9 @@ CONTRACT rewardspool : public contract {
       uint64_t get_secondary_source() const { return source.value; }
       uint64_t get_secondary_owner() const { return owner.value; }
     };
-    typedef eosio::multi_index<name("rwdshistacts"), rewards_action,
-      indexed_by<name("source"), const_mem_fun<rewards_action, uint64_t, &rewards_historical_action::get_secondary_source>>,
-      indexed_by<name("owner"), const_mem_fun<rewards_action, uint64_t, &rewards_historical_action::get_secondary_owner>>
+    typedef eosio::multi_index<name("rwdshistacts"), rewards_historical_action,
+      indexed_by<name("source"), const_mem_fun<rewards_historical_action, uint64_t, &rewards_historical_action::get_secondary_source>>,
+      indexed_by<name("owner"), const_mem_fun<rewards_historical_action, uint64_t, &rewards_historical_action::get_secondary_owner>>
     > rewards_historical_actions;
     
     TABLE rewards_action_type {
