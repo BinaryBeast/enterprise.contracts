@@ -14,7 +14,7 @@ ACTION rewardspool::createacttyp(string type, asset max_reward, unsigned int max
 ACTION rewardspool::createact(name source, name owner, uint64_t type_id) {
   rewards_action_types actions_types(_self, _self.value);
   auto action_type = actions_types.find(type_id);
-  check(action_type == actions_types.end(), "Action type does not exist");
+  check(action_type != actions_types.end(), "Action type does not exist");
   const auto& at = *action_type;
 
   rewards_actions actions(_self, type_id);
@@ -40,17 +40,9 @@ void rewardspool::inflation (name to, asset quantity) {
 }
 
 void rewardspool::increment_payable_actions() {
-  auto c_state = current_state.get_or_create(_self, state { 0, 0 });
+  auto c_state = current_state.get_or_create(_self, state { 0 });
 
   c_state.payable_actions = c_state.payable_actions + 1;
-
-  current_state.set(c_state, _self);
-}
-
-void rewardspool::increment_payable_accounts() {
-  auto c_state = current_state.get_or_create(_self, state { 0, 0 });
-
-  c_state.payable_accounts = c_state.payable_accounts + 1;
 
   current_state.set(c_state, _self);
 }
@@ -72,33 +64,10 @@ void rewardspool::pay_rewards(asset inflation_asset) {
   }
 }
   
-// Deprecated
-ACTION rewardspool::addaccaction(name account) {
-  action_accounts act_account(_self, _self.value);
-  auto existing = act_account.find(account.value);
-  print("Action added for:  ", name(account), "\n");
+// Deprecated / Testing
+ACTION rewardspool::setpayables(unsigned long payable_actions) {
+  auto c_state = current_state.get_or_create(_self, state { 0 });;
 
-  if (existing == act_account.end()) {
-     act_account.emplace(_self, [&](auto& aa) {
-        aa.account = account;
-        aa.payable_actions = 1;
-     });
-     increment_payable_accounts();
-     increment_payable_actions();
-  }
-  else {
-     const auto& exaa = *existing;
-     act_account.modify(exaa, _self, [&](auto& aa) {
-        aa.payable_actions = ++aa.payable_actions;
-     });
-     increment_payable_actions();
-  }
-}
-
-ACTION rewardspool::setpayables(unsigned long payable_accounts, unsigned long payable_actions) {
-  auto c_state = current_state.get_or_create(_self, state { 0, 0 });;
-
-  c_state.payable_accounts = payable_accounts;
   c_state.payable_actions = payable_actions;
 
   current_state.set(c_state, _self);

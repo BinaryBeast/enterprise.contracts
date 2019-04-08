@@ -23,8 +23,7 @@ CONTRACT rewardspool : public contract {
     using issinflation_action = action_wrapper<"inflation"_n, &rewardspool::inflation>;
     
     // Deprecated / Testing
-    ACTION addaccaction(name account);
-    ACTION setpayables(unsigned long payable_accounts, unsigned long payable_actions);
+    ACTION setpayables(unsigned long payable_actions);
     ACTION incpayables();
     ACTION payrewards(asset inflation_asset);
     ACTION clearstate();
@@ -32,7 +31,6 @@ CONTRACT rewardspool : public contract {
   private:
 
     TABLE state {
-      unsigned long payable_accounts;
       unsigned long payable_actions;
     };
     typedef eosio::singleton<name("state"), state> s_state;
@@ -80,7 +78,6 @@ CONTRACT rewardspool : public contract {
     typedef eosio::multi_index<name("rwdsacttyps"), rewards_action_type> rewards_action_types;
     
     void increment_payable_actions();
-    void increment_payable_accounts();
     void pay_rewards(asset inflation_asset);
     
     // Deprecated
