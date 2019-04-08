@@ -76,7 +76,6 @@ ACTION token::burn(asset quantity, string memo) {
 }
 
 ACTION token::transfer(name from, name to, asset quantity, string memo) {
-  print("Transferring ", quantity.to_string(), " from ", name(from), " to ", name(to), "\n");
   check(from != to, "cannot transfer to self");
   require_auth(from);
   check(is_account(to), "to account does not exist");
