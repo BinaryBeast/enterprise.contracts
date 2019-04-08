@@ -45,10 +45,9 @@ ACTION rewardspool::payrewards(asset inflation_asset) {
 
 void rewardspool::inflation (name to, asset quantity) {
   auto self = get_self();
-  print("Inflation issued to ", name(to), " totalling ", quantity.to_string(), "\n");
 
   if (to == self) {
-    print("This is my inflation\n");
+    print("Paying inflation from ", name(to), " totalling ", quantity.to_string(), "\n");
     pay_rewards(quantity);
   }
 }
