@@ -33,7 +33,50 @@ CONTRACT rewardspool : public contract {
     };
     typedef eosio::singleton<name("state"), state> s_state;
     s_state current_state;
-  
+    
+    TABLE rewards_action {
+      uint64_t id;
+      name source;
+      name owner;
+      unsigned int current_pay_outs;
+      asset rewards_paid;
+      
+      uint64_t primary_key() const { return id; }
+      uint64_t get_secondary_source() const { return source.value; }
+      uint64_t get_secondary_owner() const { return owner.value; }
+    };
+    typedef eosio::multi_index<name("rwdsacts"), rewards_action,
+      indexed_by<name("source"), const_mem_fun<rewards_action, uint64_t, &rewards_action::get_secondary_source>>,
+      indexed_by<name("owner"), const_mem_fun<rewards_action, uint64_t, &rewards_action::get_secondary_owner>>
+    > rewards_actions;
+    
+    TABLE rewards_historical_action {
+      uint64_t id;
+      name source;
+      name owner;
+      asset rewards_paid;
+      
+      uint64_t primary_key() const { return id; }
+      uint64_t get_secondary_source() const { return source.value; }
+      uint64_t get_secondary_owner() const { return owner.value; }
+    };
+    typedef eosio::multi_index<name("rwdshistacts"), rewards_action,
+      indexed_by<name("source"), const_mem_fun<rewards_action, uint64_t, &rewards_historical_action::get_secondary_source>>,
+      indexed_by<name("owner"), const_mem_fun<rewards_action, uint64_t, &rewards_historical_action::get_secondary_owner>>
+    > rewards_historical_actions;
+    
+    TABLE rewards_action_type {
+      uint64_t key;
+      
+      uint64_t primary_key() const { return key; }
+    };
+    typedef eosio::multi_index<name("rwdsacttyps"), rewards_action_type> rewards_action_types;
+    
+    void increment_payable_actions();
+    void increment_payable_accounts();
+    void pay_rewards(asset inflation_asset);
+    
+    // Deprecated
     TABLE action_account {
       name account;
       int payable_actions;
@@ -41,8 +84,4 @@ CONTRACT rewardspool : public contract {
       uint64_t primary_key() const { return account.value; }
     };
     typedef eosio::multi_index<name("actionaccs"), action_account> action_accounts;
-    
-    void increment_payable_actions();
-    void increment_payable_accounts();
-    void pay_rewards(asset inflation_asset);
 };
