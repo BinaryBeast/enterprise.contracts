@@ -1,46 +1,33 @@
 #include <rewardspool.hpp>
 
-ACTION rewardspool::addaccaction(name account) {
-  action_accounts act_account(_self, _self.value);
-  auto existing = act_account.find(account.value);
-  print("Action added for:  ", name(account), "\n");
-
-  if (existing == act_account.end()) {
-     act_account.emplace(_self, [&](auto& aa) {
-        aa.account = account;
-        aa.payable_actions = 1;
-     });
-     increment_payable_accounts();
-     increment_payable_actions();
-  }
-  else {
-     const auto& exaa = *existing;
-     act_account.modify(exaa, _self, [&](auto& aa) {
-        aa.payable_actions = ++aa.payable_actions;
-     });
-     increment_payable_actions();
-  }
+ACTION rewardspool::createacttyp(string type, asset max_reward, unsigned int max_pay_outs) {
+  rewards_action_types actions_types(_self, _self.value);
+  
+  actions_types.emplace(_self, [&](auto& at) {
+    at.id = actions_types.available_primary_key();
+    at.type = type;
+    at.max_reward = max_reward;
+    at.max_pay_outs = max_pay_outs;
+  });
 }
 
-ACTION rewardspool::setpayables(unsigned long payable_accounts, unsigned long payable_actions) {
-  auto c_state = current_state.get_or_create(_self, state { 0, 0 });;
+ACTION rewardspool::createact(name source, name owner, uint64_t type_id) {
+  rewards_action_types actions_types(_self, _self.value);
+  auto action_type = actions_types.find(type_id);
+  check(action_type == actions_types.end(), "Action type does not exist");
+  const auto& at = *action_type;
 
-  c_state.payable_accounts = payable_accounts;
-  c_state.payable_actions = payable_actions;
-
-  current_state.set(c_state, _self);
-}
-
-ACTION rewardspool::incpayables() {
+  rewards_actions actions(_self, type_id);
+  
+  actions.emplace(_self, [&](auto& a) {
+    a.id = actions.available_primary_key();
+    a.source = source;
+    a.owner = owner;
+    a.current_pay_outs = 0;
+    a.rewards_paid = asset(0, at.max_reward.symbol);
+  });
+  
   increment_payable_actions();
-}
-
-ACTION rewardspool::clearstate() {
-  current_state.remove();
-}
-
-ACTION rewardspool::payrewards(asset inflation_asset) {
-  pay_rewards(inflation_asset);
 }
 
 void rewardspool::inflation (name to, asset quantity) {
@@ -83,4 +70,48 @@ void rewardspool::pay_rewards(asset inflation_asset) {
      token::transfer_action transfer(name("gre111111111"), {get_self(), name("active")});
      transfer.send(_self, act_account.account, reward_asset, "Rewards");
   }
+}
+  
+// Deprecated
+ACTION rewardspool::addaccaction(name account) {
+  action_accounts act_account(_self, _self.value);
+  auto existing = act_account.find(account.value);
+  print("Action added for:  ", name(account), "\n");
+
+  if (existing == act_account.end()) {
+     act_account.emplace(_self, [&](auto& aa) {
+        aa.account = account;
+        aa.payable_actions = 1;
+     });
+     increment_payable_accounts();
+     increment_payable_actions();
+  }
+  else {
+     const auto& exaa = *existing;
+     act_account.modify(exaa, _self, [&](auto& aa) {
+        aa.payable_actions = ++aa.payable_actions;
+     });
+     increment_payable_actions();
+  }
+}
+
+ACTION rewardspool::setpayables(unsigned long payable_accounts, unsigned long payable_actions) {
+  auto c_state = current_state.get_or_create(_self, state { 0, 0 });;
+
+  c_state.payable_accounts = payable_accounts;
+  c_state.payable_actions = payable_actions;
+
+  current_state.set(c_state, _self);
+}
+
+ACTION rewardspool::incpayables() {
+  increment_payable_actions();
+}
+
+ACTION rewardspool::clearstate() {
+  current_state.remove();
+}
+
+ACTION rewardspool::payrewards(asset inflation_asset) {
+  pay_rewards(inflation_asset);
 }
