@@ -47,20 +47,56 @@ void rewardspool::increment_payable_actions() {
   current_state.set(c_state, _self);
 }
 
+void rewardspool::decrement_payable_actions() {
+  auto c_state = current_state.get_or_create(_self, state { 0 });
+
+  c_state.payable_actions = c_state.payable_actions - 1;
+
+  current_state.set(c_state, _self);
+}
+
 void rewardspool::pay_rewards(asset inflation_asset) {
-  action_accounts act_accounts(_self, _self.value);
-
   auto c_state = current_state.get();
-  auto rewards_per_action = inflation_asset.amount / c_state.payable_actions;
-  print("Rewards Per Action == ", rewards_per_action, "\n");
-
-  for (auto &act_account : act_accounts) {
-     auto reward_amount = rewards_per_action * act_account.payable_actions;
-     asset reward_asset(reward_amount, inflation_asset.symbol);
-     print("Paying Reward (", reward_asset.to_string(), ") to account ", name(act_account.account), "\n");
-
-     token::transfer_action transfer(name("gre111111111"), {get_self(), name("active")});
-     transfer.send(_self, act_account.account, reward_asset, "Rewards");
+  auto inflation_per_action = inflation_asset / c_state.payable_actions;
+  print("Inflation Per Action: ", inflation_per_action, "\n");
+  
+  rewards_action_types action_types(_self, _self.value);
+  for (auto &action_type : action_types) {
+    auto inflation_per_action_type = ((inflation_per_action > action_type.max_reward) ? action_type.max_reward : inflation_per_action);
+    
+    rewards_actions actions(_self, action_type.id);
+    rewards_historical_actions historical_actions(_self, action_type.id);
+    
+    auto action_itr = actions.begin();
+    while (action_itr != actions.end()) {
+      auto& action = *action_itr;
+      auto rewards_to_pay = inflation_per_action_type; // + reserve distribution
+      
+      // Send funds
+      print("Paying Reward (", rewards_to_pay.to_string(), ") to account ", name(action.owner), "\n");
+      token::transfer_action transfer(name("gre111111111"), {get_self(), name("active")});
+      transfer.send(_self, action.owner, rewards_to_pay, "Rewards");
+      
+      auto rewards_paid = action.rewards_paid + rewards_to_pay;
+      
+      if (action.current_pay_outs == action_type.max_pay_outs - 1) {
+        print("Converting to historical action\n");
+        historical_actions.emplace(_self, [&](auto& ha) {
+          ha.id = historical_actions.available_primary_key();
+          ha.source = action.source;
+          ha.owner = action.owner;
+          ha.rewards_paid = rewards_paid;
+        });
+        actions.erase(action_itr);
+        decrement_payable_actions();
+      } else {
+        print("Updating existing action\n");
+        actions.modify(action_itr, _self, [&](auto& a) {
+          a.rewards_paid = rewards_paid;
+          a.current_pay_outs = a.current_pay_outs + 1;
+        });
+      }
+    }
   }
 }
   

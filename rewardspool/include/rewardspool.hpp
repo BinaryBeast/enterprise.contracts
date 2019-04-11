@@ -78,14 +78,6 @@ CONTRACT rewardspool : public contract {
     typedef eosio::multi_index<name("rwdsacttyps"), rewards_action_type> rewards_action_types;
     
     void increment_payable_actions();
+    void decrement_payable_actions();
     void pay_rewards(asset inflation_asset);
-    
-    // Deprecated
-    TABLE action_account {
-      name account;
-      int payable_actions;
-  
-      uint64_t primary_key() const { return account.value; }
-    };
-    typedef eosio::multi_index<name("actionaccs"), action_account> action_accounts;
 };
