@@ -57,6 +57,12 @@ void rewardspool::decrement_payable_actions() {
 
 void rewardspool::pay_rewards(asset inflation_asset) {
   auto c_state = current_state.get();
+  
+  if (c_state.payable_actions == 0) {
+    print("> Processing Inflation | No Payable Action");
+    return;
+  }
+  
   auto inflation_per_action = inflation_asset / c_state.payable_actions;
   print("> Processing Inflation | Inflation Per Action: ", inflation_per_action, "\n");
   
