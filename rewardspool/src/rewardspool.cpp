@@ -58,11 +58,12 @@ void rewardspool::decrement_payable_actions() {
 void rewardspool::pay_rewards(asset inflation_asset) {
   auto c_state = current_state.get();
   auto inflation_per_action = inflation_asset / c_state.payable_actions;
-  print("Inflation Per Action: ", inflation_per_action, "\n");
+  print("> Processing Inflation | Inflation Per Action: ", inflation_per_action, "\n");
   
   rewards_action_types action_types(_self, _self.value);
   for (auto &action_type : action_types) {
     auto inflation_per_action_type = ((inflation_per_action > action_type.max_reward) ? action_type.max_reward : inflation_per_action);
+    print(">> Processing Action Type: ", action_type.type," | Inflation Per Action Type: ", inflation_per_action_type, "\n");
     
     rewards_actions actions(_self, action_type.id);
     rewards_historical_actions historical_actions(_self, action_type.id);
@@ -70,31 +71,33 @@ void rewardspool::pay_rewards(asset inflation_asset) {
     auto action_itr = actions.begin();
     while (action_itr != actions.end()) {
       auto& action = *action_itr;
+      print(">>> Processing Action: ", action.id, " | Owner: ", action.owner, " | Current Pay Outs: ", action.current_pay_outs, " | Rewards Paid: ", action.rewards_paid, "\n");
       auto rewards_to_pay = inflation_per_action_type; // + reserve distribution
       
       // Send funds
-      print("Paying Reward (", rewards_to_pay.to_string(), ") to account ", name(action.owner), "\n");
+      print(">>>> Paying Reward (", rewards_to_pay.to_string(), ") to account ", name(action.owner), "\n");
       token::transfer_action transfer(name("gre111111111"), {get_self(), name("active")});
       transfer.send(_self, action.owner, rewards_to_pay, "Rewards");
       
       auto rewards_paid = action.rewards_paid + rewards_to_pay;
       
       if (action.current_pay_outs == action_type.max_pay_outs - 1) {
-        print("Converting to historical action\n");
+        print(">>>> Converting to historical action\n");
         historical_actions.emplace(_self, [&](auto& ha) {
           ha.id = historical_actions.available_primary_key();
           ha.source = action.source;
           ha.owner = action.owner;
           ha.rewards_paid = rewards_paid;
         });
-        actions.erase(action_itr);
+        action_itr = actions.erase(action_itr);
         decrement_payable_actions();
       } else {
-        print("Updating existing action\n");
+        print(">>>> Updating existing action\n");
         actions.modify(action_itr, _self, [&](auto& a) {
           a.rewards_paid = rewards_paid;
           a.current_pay_outs = a.current_pay_outs + 1;
         });
+        action_itr++;
       }
     }
   }
