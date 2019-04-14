@@ -3,6 +3,7 @@
 #include <eosio/transaction.hpp>
 #include <eosio/singleton.hpp>
 #include <eosio/print.hpp>
+#include <eosio/time.hpp>
 
 #include "token.hpp"
 
@@ -40,6 +41,8 @@ CONTRACT rewardspool : public contract {
       name owner;
       unsigned int current_pay_outs;
       asset rewards_paid;
+      time_point created;
+      time_point last_paid;
       
       uint64_t primary_key() const { return id; }
       uint64_t get_secondary_source() const { return source.value; }
@@ -55,6 +58,8 @@ CONTRACT rewardspool : public contract {
       name source;
       name owner;
       asset rewards_paid;
+      time_point created;
+      time_point completed;
       
       uint64_t primary_key() const { return id; }
       uint64_t get_secondary_source() const { return source.value; }

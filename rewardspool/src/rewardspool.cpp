@@ -25,6 +25,7 @@ ACTION rewardspool::createact(name source, name owner, uint64_t type_id) {
     a.owner = owner;
     a.current_pay_outs = 0;
     a.rewards_paid = asset(0, at.max_reward.symbol);
+    a.created = current_time_point();
   });
   
   increment_payable_actions();
@@ -94,6 +95,8 @@ void rewardspool::pay_rewards(asset inflation_asset) {
           ha.source = action.source;
           ha.owner = action.owner;
           ha.rewards_paid = rewards_paid;
+          ha.created = action.created;
+          ha.completed = current_time_point();
         });
         action_itr = actions.erase(action_itr);
         decrement_payable_actions();
@@ -102,6 +105,7 @@ void rewardspool::pay_rewards(asset inflation_asset) {
         actions.modify(action_itr, _self, [&](auto& a) {
           a.rewards_paid = rewards_paid;
           a.current_pay_outs = a.current_pay_outs + 1;
+          a.last_paid = current_time_point();
         });
         action_itr++;
       }
