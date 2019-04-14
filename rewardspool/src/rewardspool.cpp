@@ -42,7 +42,7 @@ void rewardspool::inflation (name to, asset quantity) {
 }
 
 void rewardspool::increment_payable_actions() {
-  auto c_state = current_state.get_or_create(_self, state { 0 });
+  auto c_state = current_state.get_or_create(_self);
 
   c_state.payable_actions = c_state.payable_actions + 1;
 
@@ -50,7 +50,7 @@ void rewardspool::increment_payable_actions() {
 }
 
 void rewardspool::decrement_payable_actions() {
-  auto c_state = current_state.get_or_create(_self, state { 0 });
+  auto c_state = current_state.get_or_create(_self);
 
   c_state.payable_actions = c_state.payable_actions - 1;
 
@@ -59,9 +59,15 @@ void rewardspool::decrement_payable_actions() {
 
 void rewardspool::pay_rewards(asset inflation_asset) {
   auto c_state = current_state.get();
+  auto total_rewards_paid = asset(0, inflation_asset.symbol);
   
   if (c_state.payable_actions == 0) {
     print("> Processing Inflation | No Payable Action");
+    c_state.last_pay_out_amount = total_rewards_paid;
+    c_state.last_pay_out_time = current_time_point();
+  
+    current_state.set(c_state, _self);
+    
     return;
   }
   
@@ -86,6 +92,7 @@ void rewardspool::pay_rewards(asset inflation_asset) {
       token::transfer_action transfer(name("gre111111111"), {get_self(), name("active")});
       transfer.send(_self, action.owner, rewards_to_pay, "Rewards");
       
+      total_rewards_paid = total_rewards_paid + rewards_to_pay;
       auto rewards_paid = action.rewards_paid + rewards_to_pay;
       
       if (action.current_pay_outs == action_type.max_pay_outs - 1) {
@@ -105,12 +112,16 @@ void rewardspool::pay_rewards(asset inflation_asset) {
         actions.modify(action_itr, _self, [&](auto& a) {
           a.rewards_paid = rewards_paid;
           a.current_pay_outs = a.current_pay_outs + 1;
-          a.last_paid = current_time_point();
         });
         action_itr++;
       }
     }
   }
+  
+  c_state.last_pay_out_amount = total_rewards_paid;
+  c_state.last_pay_out_time = current_time_point();
+
+  current_state.set(c_state, _self);
 }
   
 // Deprecated / Testing

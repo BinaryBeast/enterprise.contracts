@@ -31,6 +31,8 @@ CONTRACT rewardspool : public contract {
 
     TABLE state {
       unsigned long payable_actions;
+      asset last_pay_out_amount;
+      time_point last_pay_out_time;
     };
     typedef eosio::singleton<name("state"), state> s_state;
     s_state current_state;
@@ -42,7 +44,6 @@ CONTRACT rewardspool : public contract {
       unsigned int current_pay_outs;
       asset rewards_paid;
       time_point created;
-      time_point last_paid;
       
       uint64_t primary_key() const { return id; }
       uint64_t get_secondary_source() const { return source.value; }
