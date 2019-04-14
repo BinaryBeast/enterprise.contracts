@@ -75,6 +75,7 @@ CONTRACT rewardspool : public contract {
       string type;
       asset max_reward;
       unsigned int max_pay_outs;
+      asset max_rpp;
       
       uint64_t primary_key() const { return id; }
     };

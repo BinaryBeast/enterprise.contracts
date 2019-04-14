@@ -8,6 +8,7 @@ ACTION rewardspool::createacttyp(string type, asset max_reward, unsigned int max
     at.type = type;
     at.max_reward = max_reward;
     at.max_pay_outs = max_pay_outs;
+    at.max_rpp = max_reward / max_pay_outs;
   });
 }
 
@@ -69,7 +70,7 @@ void rewardspool::pay_rewards(asset inflation_asset) {
   
   rewards_action_types action_types(_self, _self.value);
   for (auto &action_type : action_types) {
-    auto inflation_per_action_type = ((inflation_per_action > action_type.max_reward) ? action_type.max_reward : inflation_per_action);
+    auto inflation_per_action_type = ((inflation_per_action > action_type.max_rpp) ? action_type.max_rpp : inflation_per_action);
     print(">> Processing Action Type: ", action_type.type," | Inflation Per Action Type: ", inflation_per_action_type, "\n");
     
     rewards_actions actions(_self, action_type.id);
@@ -81,7 +82,6 @@ void rewardspool::pay_rewards(asset inflation_asset) {
       print(">>> Processing Action: ", action.id, " | Owner: ", action.owner, " | Current Pay Outs: ", action.current_pay_outs, " | Rewards Paid: ", action.rewards_paid, "\n");
       auto rewards_to_pay = inflation_per_action_type; // + reserve distribution
       
-      // Send funds
       print(">>>> Paying Reward (", rewards_to_pay.to_string(), ") to account ", name(action.owner), "\n");
       token::transfer_action transfer(name("gre111111111"), {get_self(), name("active")});
       transfer.send(_self, action.owner, rewards_to_pay, "Rewards");
