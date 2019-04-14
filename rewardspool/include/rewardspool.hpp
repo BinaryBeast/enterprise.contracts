@@ -23,10 +23,8 @@ CONTRACT rewardspool : public contract {
     using issinflation_action = action_wrapper<"inflation"_n, &rewardspool::inflation>;
     
     // Deprecated / Testing
-    ACTION setpayables(unsigned long payable_actions);
-    ACTION incpayables();
     ACTION payrewards(asset inflation_asset);
-    ACTION clearstate();
+    ACTION reset();
   
   private:
 

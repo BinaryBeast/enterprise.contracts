@@ -110,22 +110,33 @@ void rewardspool::pay_rewards(asset inflation_asset) {
 }
   
 // Deprecated / Testing
-ACTION rewardspool::setpayables(unsigned long payable_actions) {
-  auto c_state = current_state.get_or_create(_self, state { 0 });;
-
-  c_state.payable_actions = payable_actions;
-
-  current_state.set(c_state, _self);
-}
-
-ACTION rewardspool::incpayables() {
-  increment_payable_actions();
-}
-
-ACTION rewardspool::clearstate() {
-  current_state.remove();
-}
-
 ACTION rewardspool::payrewards(asset inflation_asset) {
+  require_auth(_self);
   pay_rewards(inflation_asset);
+}
+
+ACTION rewardspool::reset() {
+  require_auth(_self);
+  current_state.remove();
+  
+  rewards_action_types action_types(_self, _self.value);
+  auto action_type_itr = action_types.begin();
+  
+  while (action_type_itr != action_types.end()) {
+    rewards_actions actions(_self, action_type_itr->id);
+    auto action_itr = actions.begin();
+    
+    while (action_itr != actions.end()) {
+      action_itr = actions.erase(action_itr);
+    }
+    
+    rewards_historical_actions historical_actions(_self, action_type_itr->id);
+    auto historical_action_itr = historical_actions.begin();
+    
+    while (historical_action_itr != historical_actions.end()) {
+      historical_action_itr = historical_actions.erase(historical_action_itr);
+    }
+    
+    action_type_itr = action_types.erase(action_type_itr);
+  }
 }
