@@ -4,6 +4,7 @@
 #include <eosio/singleton.hpp>
 #include <eosio/print.hpp>
 #include <eosio/time.hpp>
+#include <eosio/crypto.hpp>
 
 #include "token.hpp"
 
@@ -16,7 +17,7 @@ CONTRACT rewardspool : public contract {
     rewardspool(eosio::name receiver, eosio::name code, datastream<const char*> ds):contract(receiver, code, ds), current_state(_self, _self.value) {}
     
     ACTION createacttyp(string type, asset max_reward, unsigned int max_pay_outs);
-    ACTION createact(name source, name owner, uint64_t type_id);
+    ACTION createact(name source, name owner, uint64_t type_id, string uuid_salt);
     
     [[eosio::on_notify("gre111111111::issinflation")]]
     void inflation(name to, asset quantity);
@@ -41,6 +42,8 @@ CONTRACT rewardspool : public contract {
       uint64_t id;
       name source;
       name owner;
+      string uuid_salt;
+      checksum256 uuid;
       unsigned int current_pay_outs;
       asset rewards_paid;
       time_point created;
@@ -48,16 +51,20 @@ CONTRACT rewardspool : public contract {
       uint64_t primary_key() const { return id; }
       uint64_t get_secondary_source() const { return source.value; }
       uint64_t get_secondary_owner() const { return owner.value; }
+      checksum256 get_secondary_uuid() const { return uuid; }
     };
     typedef eosio::multi_index<name("rwdsacts"), rewards_action,
       indexed_by<name("source"), const_mem_fun<rewards_action, uint64_t, &rewards_action::get_secondary_source>>,
-      indexed_by<name("owner"), const_mem_fun<rewards_action, uint64_t, &rewards_action::get_secondary_owner>>
+      indexed_by<name("owner"), const_mem_fun<rewards_action, uint64_t, &rewards_action::get_secondary_owner>>,
+      indexed_by<name("uuid"), const_mem_fun<rewards_action, checksum256, &rewards_action::get_secondary_uuid>>
     > rewards_actions;
     
     TABLE rewards_historical_action {
       uint64_t id;
       name source;
       name owner;
+      string uuid_salt;
+      checksum256 uuid;
       asset rewards_paid;
       time_point created;
       time_point completed;
@@ -65,10 +72,12 @@ CONTRACT rewardspool : public contract {
       uint64_t primary_key() const { return id; }
       uint64_t get_secondary_source() const { return source.value; }
       uint64_t get_secondary_owner() const { return owner.value; }
+      checksum256 get_secondary_uuid() const { return uuid; }
     };
     typedef eosio::multi_index<name("rwdshistacts"), rewards_historical_action,
       indexed_by<name("source"), const_mem_fun<rewards_historical_action, uint64_t, &rewards_historical_action::get_secondary_source>>,
-      indexed_by<name("owner"), const_mem_fun<rewards_historical_action, uint64_t, &rewards_historical_action::get_secondary_owner>>
+      indexed_by<name("owner"), const_mem_fun<rewards_historical_action, uint64_t, &rewards_historical_action::get_secondary_owner>>,
+      indexed_by<name("uuid"), const_mem_fun<rewards_historical_action, checksum256, &rewards_historical_action::get_secondary_uuid>>
     > rewards_historical_actions;
     
     TABLE rewards_action_type {

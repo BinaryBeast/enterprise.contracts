@@ -12,20 +12,24 @@ ACTION rewardspool::createacttyp(string type, asset max_reward, unsigned int max
   });
 }
 
-ACTION rewardspool::createact(name source, name owner, uint64_t type_id) {
+ACTION rewardspool::createact(name source, name owner, uint64_t type_id, string uuid_salt) {
   rewards_action_types actions_types(_self, _self.value);
   auto action_type = actions_types.find(type_id);
   check(action_type != actions_types.end(), "Action type does not exist");
-  const auto& at = *action_type;
 
   rewards_actions actions(_self, type_id);
+  
+  auto uuid_raw = source.to_string() + owner.to_string() + std::to_string(type_id) + uuid_salt;
+  checksum256 uuid_hash = sha256(const_cast<char*>(uuid_raw.c_str()), uuid_raw.size() * sizeof(char));
   
   actions.emplace(_self, [&](auto& a) {
     a.id = actions.available_primary_key();
     a.source = source;
     a.owner = owner;
+    a.uuid_salt = uuid_salt;
+    a.uuid = uuid_hash;
     a.current_pay_outs = 0;
-    a.rewards_paid = asset(0, at.max_reward.symbol);
+    a.rewards_paid = asset(0, action_type->max_reward.symbol);
     a.created = current_time_point();
   });
   
@@ -101,6 +105,8 @@ void rewardspool::pay_rewards(asset inflation_asset) {
           ha.id = historical_actions.available_primary_key();
           ha.source = action.source;
           ha.owner = action.owner;
+          ha.uuid_salt = action.uuid_salt;
+          ha.uuid = action.uuid;
           ha.rewards_paid = rewards_paid;
           ha.created = action.created;
           ha.completed = current_time_point();
