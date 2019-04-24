@@ -29,6 +29,13 @@ CONTRACT token : public contract {
     using inflate_action = action_wrapper<name("inflate"), &token::inflate>;
     using issinflation_action = action_wrapper<name("issinflation"), &token::issinflation>;
   
+    TABLE account {
+      asset balance;
+  
+      uint64_t primary_key() const { return balance.symbol.code().raw(); }
+    };
+    typedef eosio::multi_index<name("accounts"), account> accounts;
+  
   private:
   
     TABLE inflator {
@@ -40,12 +47,6 @@ CONTRACT token : public contract {
     typedef eosio::singleton<name("inflator"), inflator> sinflator;
     sinflator s_inflator;
     
-    TABLE account {
-      asset balance;
-  
-      uint64_t primary_key() const { return balance.symbol.code().raw(); }
-    };
-    typedef eosio::multi_index<name("accounts"), account> accounts;
     
     TABLE currency_stats {
       asset  supply;

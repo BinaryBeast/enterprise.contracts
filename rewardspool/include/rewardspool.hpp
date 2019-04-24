@@ -94,4 +94,5 @@ CONTRACT rewardspool : public contract {
     void increment_payable_actions();
     void decrement_payable_actions();
     void pay_rewards(asset inflation_asset);
+    asset get_current_balance(asset balance_asset);
 };

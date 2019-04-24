@@ -83,13 +83,14 @@ void rewardspool::pay_rewards(asset inflation_asset) {
     return;
   }
   
-  auto inflation_per_action = inflation_asset / c_state.payable_actions;
-  print("> Processing Inflation | Inflation Per Action: ", inflation_per_action, "\n");
+  auto current_balance = get_current_balance(inflation_asset);
+  auto payable_per_action = (inflation_asset + current_balance) / c_state.payable_actions;
+  print("> Processing Inflation | Current Balance: ", current_balance, " | Inflation: ", inflation_asset, " | Payable Per Action: ", payable_per_action, "\n");
   
   rewards_action_types action_types(_self, _self.value);
   for (auto &action_type : action_types) {
-    auto inflation_per_action_type = ((inflation_per_action > action_type.max_rpp) ? action_type.max_rpp : inflation_per_action);
-    print(">> Processing Action Type: ", action_type.type," | Inflation Per Action Type: ", inflation_per_action_type, "\n");
+    auto payable_per_action_type = ((payable_per_action > action_type.max_rpp) ? action_type.max_rpp : payable_per_action);
+    print(">> Processing Action Type: ", action_type.type," | Inflation Per Action Type: ", payable_per_action_type, "\n");
     
     rewards_actions actions(_self, action_type.id);
     rewards_historical_actions historical_actions(_self, action_type.id);
@@ -98,7 +99,7 @@ void rewardspool::pay_rewards(asset inflation_asset) {
     while (action_itr != actions.end()) {
       auto& action = *action_itr;
       print(">>> Processing Action: ", action.id, " | Owner: ", action.owner, " | Current Pay Outs: ", action.current_pay_outs, " | Rewards Paid: ", action.rewards_paid, "\n");
-      auto rewards_to_pay = inflation_per_action_type; // + reserve distribution
+      auto rewards_to_pay = payable_per_action_type;
       
       print(">>>> Paying Reward (", rewards_to_pay.to_string(), ") to account ", name(action.owner), "\n");
       token::transfer_action transfer(name("gre111111111"), {get_self(), name("active")});
@@ -136,6 +137,14 @@ void rewardspool::pay_rewards(asset inflation_asset) {
   c_state.last_pay_out_time = current_time_point();
 
   current_state.set(c_state, _self);
+}
+
+asset rewardspool::get_current_balance(asset balance_asset) {
+  token::accounts token_accounts(name("gre111111111"), _self.value);
+  auto existing_token = token_accounts.find(balance_asset.symbol.code().raw());
+  check(existing_token != token_accounts.end(), "Token does not exist for this account");
+  
+  return existing_token->balance;
 }
   
 // Deprecated / Testing
