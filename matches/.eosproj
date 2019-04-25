@@ -1,0 +1,19 @@
+{
+  "main": "src\\matches.cpp",
+  "contract": "matches",
+  "include": "",
+  "cdt": "",
+  "output": "",
+  "scripts": {
+    "build": ""
+  },
+  "deploy": {
+    "mainnet": "",
+    "kylin": "",
+    "jungle": "",
+    "local": ""
+  },
+  "test": {
+    "npmClient": ""
+  }
+}
