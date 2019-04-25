@@ -60,6 +60,7 @@ CONTRACT matches : public contract {
       uint64_t get_secondary_started() const { return started.elapsed.count(); }
       uint64_t get_secondary_completed() const { return completed.elapsed.count(); }
       uint64_t get_secondary_is_completed() const { return static_cast<uint64_t>(is_completed); }
+      double get_secondary_confidence() const { return confidence; }
     };
     typedef eosio::multi_index<name("matches"), match,
       indexed_by<name("uuid"), const_mem_fun<match, checksum256, &match::get_secondary_uuid>>,
@@ -68,7 +69,8 @@ CONTRACT matches : public contract {
       indexed_by<name("created"), const_mem_fun<match, uint64_t, &match::get_secondary_created>>,
       indexed_by<name("started"), const_mem_fun<match, uint64_t, &match::get_secondary_started>>,
       indexed_by<name("completed"), const_mem_fun<match, uint64_t, &match::get_secondary_completed>>,
-      indexed_by<name("iscompleted"), const_mem_fun<match, uint64_t, &match::get_secondary_is_completed>>
+      indexed_by<name("iscompleted"), const_mem_fun<match, uint64_t, &match::get_secondary_is_completed>>,
+      indexed_by<name("confidence"), const_mem_fun<match, double, &match::get_secondary_confidence>>
     > matches;
     
     
