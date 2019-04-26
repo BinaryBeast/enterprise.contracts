@@ -227,7 +227,7 @@ asset token::inflate_max_supply(asset quantity, double percentage) {
   auto inflation = st.max_supply.amount * percentage;
   auto new_max_supply = st.max_supply.amount + inflation;
 
-  statstable.modify(st, _self, [&](auto& s) {
+  statstable.modify(st, same_payer, [&](auto& s) {
      s.max_supply.amount = new_max_supply;
   });
 

@@ -124,7 +124,7 @@ void rewardspool::pay_rewards(asset inflation_asset) {
         decrement_payable_actions();
       } else {
         print(">>>> Updating existing action\n");
-        actions.modify(action_itr, _self, [&](auto& a) {
+        actions.modify(action_itr, same_payer, [&](auto& a) {
           a.rewards_paid = rewards_paid;
           a.current_pay_outs = a.current_pay_outs + 1;
         });

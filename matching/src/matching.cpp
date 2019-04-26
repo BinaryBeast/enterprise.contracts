@@ -28,7 +28,7 @@ ACTION matching::updatemchtyp(checksum256 match_type_uuid, string type) {
   auto existing_mt = mts_indexed_by_uuid.find(match_type_uuid);
   check(existing_mt != mts_indexed_by_uuid.end(), "Match Type with UUID does not exist");
   
-  mts_indexed_by_uuid.modify(existing_mt, _self, [&](auto& mt) {
+  mts_indexed_by_uuid.modify(existing_mt, same_payer, [&](auto& mt) {
      mt.type = type;
   });
 }
@@ -70,7 +70,7 @@ ACTION matching::updatemch(checksum256 match_uuid, string title, time_point star
   auto existing_mch = mchs_indexed_by_uuid.find(match_uuid);
   check(existing_mch != mchs_indexed_by_uuid.end(), "Match with UUID does not exist");
   
-  mchs_indexed_by_uuid.modify(existing_mch, _self, [&](auto& mch) {
+  mchs_indexed_by_uuid.modify(existing_mch, same_payer, [&](auto& mch) {
      mch.title = title;
      mch.starts = starts;
   });
@@ -82,7 +82,7 @@ ACTION matching::publishmch(checksum256 match_uuid) {
   auto existing_mch = mchs_indexed_by_uuid.find(match_uuid);
   check(existing_mch != mchs_indexed_by_uuid.end(), "Match with UUID does not exist");
   
-  mchs_indexed_by_uuid.modify(existing_mch, _self, [&](auto& mch) {
+  mchs_indexed_by_uuid.modify(existing_mch, same_payer, [&](auto& mch) {
      mch.is_live = true;
   });
 }
@@ -109,7 +109,7 @@ ACTION matching::createmchopp(string title, checksum256 match_uuid) {
   
   opponents.push_back({id_hash, title});
   
-  mchs_indexed_by_uuid.modify(existing_mch, _self, [&](auto& mch) {
+  mchs_indexed_by_uuid.modify(existing_mch, same_payer, [&](auto& mch) {
      mch.opponents = opponents;
   });
 }
