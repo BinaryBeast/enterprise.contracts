@@ -14,8 +14,10 @@ CONTRACT matching : public contract {
     matching(eosio::name receiver, eosio::name code, datastream<const char*> ds):contract(receiver, code, ds) {}
 
     ACTION createmchtyp(string type, unsigned int max_opponents, string uuid_salt);
+    ACTION updatemchtyp(checksum256 match_type_uuid, string type);
     ACTION createmch(checksum256 match_type_uuid, string title, name owner, time_point starts, string uuid_salt);
     ACTION updatemch(checksum256 match_uuid, string title, time_point starts);
+    // Change Match Type
     // Publish Match
     ACTION createmchopp(string title, checksum256 match_uuid);
     // Update Match Opponent

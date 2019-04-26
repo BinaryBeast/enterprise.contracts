@@ -20,6 +20,19 @@ ACTION matching::createmchtyp(string type, unsigned int max_opponents, string uu
   });
 }
 
+ACTION matching::updatemchtyp(checksum256 match_type_uuid, string type) {
+  check(type.size() < 24 && type.size() > 0, "Type must be 24 characters or less");
+  
+  match_types mts(_self, _self.value);
+  auto mts_indexed_by_uuid = mts.template get_index<name("uuid")>();
+  auto existing_mt = mts_indexed_by_uuid.find(match_type_uuid);
+  check(existing_mt != mts_indexed_by_uuid.end(), "Match Type with UUID does not exist");
+  
+  mts_indexed_by_uuid.modify(existing_mt, _self, [&](auto& mt) {
+     mt.type = type;
+  });
+}
+
 ACTION matching::createmch(checksum256 match_type_uuid, string title, name owner, time_point starts, string uuid_salt) {
   check(title.size() <= 64 && title.size() > 0, "Title must be 64 characters or less");
   //check(starts in future)
