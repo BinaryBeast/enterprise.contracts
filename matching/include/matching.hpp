@@ -1,5 +1,7 @@
 #include <eosio/eosio.hpp>
+#include <eosio/transaction.hpp>
 #include <eosio/print.hpp>
+#include <eosio/time.hpp>
 #include <eosio/crypto.hpp>
 
 using namespace eosio;
@@ -12,12 +14,16 @@ CONTRACT matching : public contract {
     matching(eosio::name receiver, eosio::name code, datastream<const char*> ds):contract(receiver, code, ds) {}
 
     ACTION createmchtyp(string type, string uuid_salt);
+    ACTION createmch(checksum256 match_type_uuid, string title, name owner, time_point starts, string uuid_salt);
     // Create Match
     // Update Match
+    // Publish Match
     // Create Match Opponent
     // Update Match Opponent
+    // Delete Match Opponent
     // Complete Match
-    // Create Validate Type
+    // Delete Match
+    // Create Validation Type
     // Validate Match
   
   private:
@@ -47,10 +53,11 @@ CONTRACT matching : public contract {
       string title;
       name owner;
       time_point created;
-      time_point started;
+      time_point starts;
       time_point completed;
-      bool is_completed;
-      double confidence;
+      bool is_completed = false;
+      bool is_live = false;
+      double confidence = 0;
       vector<match_opponent> opponents;
       
       uint64_t primary_key() const { return id; }
@@ -58,9 +65,11 @@ CONTRACT matching : public contract {
       checksum256 get_secondary_match_type_uuid() const { return match_type_uuid; }
       uint64_t get_secondary_owner() const { return owner.value; }
       uint64_t get_secondary_created() const { return created.elapsed.count(); }
-      uint64_t get_secondary_started() const { return started.elapsed.count(); }
+      uint64_t get_secondary_created_live() const { return is_live ? created.elapsed.count() : std::numeric_limits<uint64_t>::max(); }
+      uint64_t get_secondary_starts() const { return starts.elapsed.count(); }
       uint64_t get_secondary_completed() const { return completed.elapsed.count(); }
       uint64_t get_secondary_is_completed() const { return static_cast<uint64_t>(is_completed); }
+      uint64_t get_secondary_is_live() const { return static_cast<uint64_t>(is_live); }
       double get_secondary_confidence() const { return confidence; }
     };
     typedef eosio::multi_index<name("matches"), match,
@@ -68,9 +77,11 @@ CONTRACT matching : public contract {
       indexed_by<name("typeuuid"), const_mem_fun<match, checksum256, &match::get_secondary_match_type_uuid>>,
       indexed_by<name("owner"), const_mem_fun<match, uint64_t, &match::get_secondary_owner>>,
       indexed_by<name("created"), const_mem_fun<match, uint64_t, &match::get_secondary_created>>,
-      indexed_by<name("started"), const_mem_fun<match, uint64_t, &match::get_secondary_started>>,
+      indexed_by<name("createdlive"), const_mem_fun<match, uint64_t, &match::get_secondary_created_live>>,
+      indexed_by<name("starts"), const_mem_fun<match, uint64_t, &match::get_secondary_starts>>,
       indexed_by<name("completed"), const_mem_fun<match, uint64_t, &match::get_secondary_completed>>,
       indexed_by<name("iscompleted"), const_mem_fun<match, uint64_t, &match::get_secondary_is_completed>>,
+      indexed_by<name("islive"), const_mem_fun<match, uint64_t, &match::get_secondary_is_live>>,
       indexed_by<name("confidence"), const_mem_fun<match, double, &match::get_secondary_confidence>>
     > matches;
     
