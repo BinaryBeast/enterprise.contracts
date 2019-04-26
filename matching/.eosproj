@@ -11,7 +11,7 @@
     "mainnet": "",
     "kylin": "",
     "jungle": "",
-    "local": ""
+    "local": "entmatching"
   },
   "test": {
     "npmClient": ""

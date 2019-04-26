@@ -48,6 +48,21 @@ ACTION matching::createmch(checksum256 match_type_uuid, string title, name owner
   });
 }
 
+ACTION matching::updatemch(checksum256 match_uuid, string title, time_point starts) {
+  check(title.size() <= 32 && title.size() > 0, "Title must be 32 characters or less");
+  //check(starts in future)
+  
+  matches mchs(_self, _self.value);
+  auto mchs_indexed_by_uuid = mchs.template get_index<name("uuid")>();
+  auto existing_mch = mchs_indexed_by_uuid.find(match_uuid);
+  check(existing_mch != mchs_indexed_by_uuid.end(), "Match with UUID does not exist");
+  
+  mchs_indexed_by_uuid.modify(existing_mch, _self, [&](auto& mch) {
+     mch.title = title;
+     mch.starts = starts;
+  });
+}
+
 ACTION matching::createmchopp(string title, checksum256 match_uuid) {
   check(title.size() <= 32 && title.size() > 0, "Title must be 32 characters or less");
   
