@@ -18,7 +18,7 @@ CONTRACT matching : public contract {
     ACTION createmch(checksum256 match_type_uuid, string title, name owner, time_point starts, string uuid_salt);
     ACTION updatemch(checksum256 match_uuid, string title, time_point starts);
     // Change Match Type
-    ACTION publishmch(checksum256 match_uuid);
+    ACTION setstatusmch(checksum256 match_uuid, uint64_t status);
     ACTION createmchopp(string title, checksum256 match_uuid);
     // Update Match Opponent
     // Delete Match Opponent
@@ -60,8 +60,7 @@ CONTRACT matching : public contract {
       time_point created;
       time_point starts;
       time_point completed;
-      bool is_completed = false;
-      bool is_live = false;
+      uint64_t status = static_cast<uint64_t>(match_status::unpublished);
       double confidence = 0;
       vector<match_opponent> opponents;
       
@@ -70,25 +69,28 @@ CONTRACT matching : public contract {
       checksum256 get_secondary_match_type_uuid() const { return match_type_uuid; }
       uint64_t get_secondary_owner() const { return owner.value; }
       uint64_t get_secondary_created() const { return created.elapsed.count(); }
-      uint64_t get_secondary_created_live() const { return is_live ? created.elapsed.count() : std::numeric_limits<uint64_t>::max(); }
-      uint64_t get_secondary_created_active() const { return is_live && !is_completed ? created.elapsed.count() : std::numeric_limits<uint64_t>::max(); }
+      uint64_t get_secondary_created_active() const { return status == static_cast<uint64_t>(match_status::active) ? created.elapsed.count() : std::numeric_limits<uint64_t>::max(); }
       uint64_t get_secondary_starts() const { return starts.elapsed.count(); }
       uint64_t get_secondary_completed() const { return completed.elapsed.count(); }
-      uint64_t get_secondary_is_completed() const { return static_cast<uint64_t>(is_completed); }
-      uint64_t get_secondary_is_live() const { return static_cast<uint64_t>(is_live); }
+      uint64_t get_secondary_status() const { return status; }
       double get_secondary_confidence() const { return confidence; }
+      
+      enum class match_status : uint64_t {
+        unpublished = 0,
+        active      = 1,
+        completed   = 2,
+        abandoned   = 3
+      };
     };
     typedef eosio::multi_index<name("matches"), match,
       indexed_by<name("uuid"), const_mem_fun<match, checksum256, &match::get_secondary_uuid>>,
       indexed_by<name("typeuuid"), const_mem_fun<match, checksum256, &match::get_secondary_match_type_uuid>>,
       indexed_by<name("owner"), const_mem_fun<match, uint64_t, &match::get_secondary_owner>>,
       indexed_by<name("created"), const_mem_fun<match, uint64_t, &match::get_secondary_created>>,
-      indexed_by<name("createdlive"), const_mem_fun<match, uint64_t, &match::get_secondary_created_live>>,
       indexed_by<name("createdactiv"), const_mem_fun<match, uint64_t, &match::get_secondary_created_active>>,
       indexed_by<name("starts"), const_mem_fun<match, uint64_t, &match::get_secondary_starts>>,
       indexed_by<name("completed"), const_mem_fun<match, uint64_t, &match::get_secondary_completed>>,
-      indexed_by<name("iscompleted"), const_mem_fun<match, uint64_t, &match::get_secondary_is_completed>>,
-      indexed_by<name("islive"), const_mem_fun<match, uint64_t, &match::get_secondary_is_live>>,
+      indexed_by<name("status"), const_mem_fun<match, uint64_t, &match::get_secondary_status>>,
       indexed_by<name("confidence"), const_mem_fun<match, double, &match::get_secondary_confidence>>
     > matches;
     

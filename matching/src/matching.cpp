@@ -69,6 +69,7 @@ ACTION matching::updatemch(checksum256 match_uuid, string title, time_point star
   auto mchs_indexed_by_uuid = mchs.template get_index<name("uuid")>();
   auto existing_mch = mchs_indexed_by_uuid.find(match_uuid);
   check(existing_mch != mchs_indexed_by_uuid.end(), "Match with UUID does not exist");
+  require_auth(existing_mch->owner);
   
   mchs_indexed_by_uuid.modify(existing_mch, same_payer, [&](auto& mch) {
      mch.title = title;
@@ -76,14 +77,15 @@ ACTION matching::updatemch(checksum256 match_uuid, string title, time_point star
   });
 }
 
-ACTION matching::publishmch(checksum256 match_uuid) {
+ACTION matching::setstatusmch(checksum256 match_uuid, uint64_t status) {
   matches mchs(_self, _self.value);
   auto mchs_indexed_by_uuid = mchs.template get_index<name("uuid")>();
   auto existing_mch = mchs_indexed_by_uuid.find(match_uuid);
   check(existing_mch != mchs_indexed_by_uuid.end(), "Match with UUID does not exist");
+  require_auth(existing_mch->owner);
   
   mchs_indexed_by_uuid.modify(existing_mch, same_payer, [&](auto& mch) {
-     mch.is_live = true;
+     mch.status = status;
   });
 }
 
