@@ -1,23 +1,24 @@
 #include <eosio/eosio.hpp>
 #include <eosio/print.hpp>
+#include <eosio/crypto.hpp>
 
 using namespace eosio;
 using std::string;
+using std::vector;
 
-CONTRACT matches : public contract {
+CONTRACT matching : public contract {
   public:
     using contract::contract;
-    matches(eosio::name receiver, eosio::name code, datastream<const char*> ds):contract(receiver, code, ds) {}
+    matching(eosio::name receiver, eosio::name code, datastream<const char*> ds):contract(receiver, code, ds) {}
 
     ACTION createmchtyp(string type, string uuid_salt);
-    // Create Match Type
-    // Create Validate Type
     // Create Match
     // Update Match
     // Create Match Opponent
     // Update Match Opponent
-    // Validate Match
     // Complete Match
+    // Create Validate Type
+    // Validate Match
   
   private:
     TABLE match_type {
@@ -37,7 +38,7 @@ CONTRACT matches : public contract {
       string title;
       double score;
       bool winner;
-    }
+    };
     
     TABLE match {
       uint64_t id;

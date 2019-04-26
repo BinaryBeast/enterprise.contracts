@@ -1,6 +1,6 @@
 {
-  "main": "src\\matches.cpp",
-  "contract": "matches",
+  "main": "src\\matching.cpp",
+  "contract": "matching",
   "include": "",
   "cdt": "",
   "output": "",
