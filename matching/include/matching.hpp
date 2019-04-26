@@ -13,16 +13,16 @@ CONTRACT matching : public contract {
     using contract::contract;
     matching(eosio::name receiver, eosio::name code, datastream<const char*> ds):contract(receiver, code, ds) {}
 
-    ACTION createmchtyp(string type, string uuid_salt);
+    ACTION createmchtyp(string type, unsigned int max_opponents, string uuid_salt);
     ACTION createmch(checksum256 match_type_uuid, string title, name owner, time_point starts, string uuid_salt);
-    // Create Match
     // Update Match
     // Publish Match
-    // Create Match Opponent
+    ACTION createmchopp(string title, checksum256 match_uuid);
     // Update Match Opponent
     // Delete Match Opponent
     // Complete Match
     // Delete Match
+    // Transfer Match Ownership
     // Create Validation Type
     // Validate Match
   
@@ -31,6 +31,7 @@ CONTRACT matching : public contract {
       uint64_t id;
       checksum256 uuid;
       string type;
+      unsigned int max_opponents;
       
       uint64_t primary_key() const { return id; }
       checksum256 get_secondary_uuid() const { return uuid; }
@@ -42,8 +43,8 @@ CONTRACT matching : public contract {
     struct match_opponent {
       checksum256 id;
       string title;
-      double score;
-      bool winner;
+      double score = 0;
+      bool winner = false;
     };
     
     TABLE match {
