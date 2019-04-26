@@ -18,7 +18,7 @@ CONTRACT matching : public contract {
     ACTION createmch(checksum256 match_type_uuid, string title, name owner, time_point starts, string uuid_salt);
     ACTION updatemch(checksum256 match_uuid, string title, time_point starts);
     // Change Match Type
-    // Publish Match
+    ACTION publishmch(checksum256 match_uuid);
     ACTION createmchopp(string title, checksum256 match_uuid);
     // Update Match Opponent
     // Delete Match Opponent
