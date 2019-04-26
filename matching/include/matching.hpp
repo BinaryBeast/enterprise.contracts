@@ -22,11 +22,13 @@ CONTRACT matching : public contract {
     ACTION createmchopp(string title, checksum256 match_uuid);
     // Update Match Opponent
     // Delete Match Opponent
-    // Complete Match
     // Delete Match
     // Transfer Match Ownership
     // Create Validation Type
     // Validate Match
+    
+    // Testing
+    ACTION reset();
   
   private:
     TABLE match_type {
@@ -69,6 +71,7 @@ CONTRACT matching : public contract {
       uint64_t get_secondary_owner() const { return owner.value; }
       uint64_t get_secondary_created() const { return created.elapsed.count(); }
       uint64_t get_secondary_created_live() const { return is_live ? created.elapsed.count() : std::numeric_limits<uint64_t>::max(); }
+      uint64_t get_secondary_created_active() const { return is_live && !is_completed ? created.elapsed.count() : std::numeric_limits<uint64_t>::max(); }
       uint64_t get_secondary_starts() const { return starts.elapsed.count(); }
       uint64_t get_secondary_completed() const { return completed.elapsed.count(); }
       uint64_t get_secondary_is_completed() const { return static_cast<uint64_t>(is_completed); }
@@ -81,6 +84,7 @@ CONTRACT matching : public contract {
       indexed_by<name("owner"), const_mem_fun<match, uint64_t, &match::get_secondary_owner>>,
       indexed_by<name("created"), const_mem_fun<match, uint64_t, &match::get_secondary_created>>,
       indexed_by<name("createdlive"), const_mem_fun<match, uint64_t, &match::get_secondary_created_live>>,
+      indexed_by<name("createdactiv"), const_mem_fun<match, uint64_t, &match::get_secondary_created_active>>,
       indexed_by<name("starts"), const_mem_fun<match, uint64_t, &match::get_secondary_starts>>,
       indexed_by<name("completed"), const_mem_fun<match, uint64_t, &match::get_secondary_completed>>,
       indexed_by<name("iscompleted"), const_mem_fun<match, uint64_t, &match::get_secondary_is_completed>>,

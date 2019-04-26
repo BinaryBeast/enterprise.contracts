@@ -113,3 +113,20 @@ ACTION matching::createmchopp(string title, checksum256 match_uuid) {
      mch.opponents = opponents;
   });
 }
+
+// Testing
+ACTION matching::reset() {
+  require_auth(_self);
+  
+  matches mchs(_self, _self.value);
+  auto match_itr = mchs.begin();
+  while (match_itr != mchs.end()) {
+    match_itr = mchs.erase(match_itr);
+  }
+  
+  match_types mts(_self, _self.value);
+  auto match_type_itr = mts.begin();
+  while (match_type_itr != mts.end()) {
+    match_type_itr = mts.erase(match_type_itr);
+  }
+}
