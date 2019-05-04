@@ -1,6 +1,6 @@
 #include <matching.hpp>
 
-ACTION matching::createmchtyp(string type, unsigned int max_opponents, string uuid_salt) {
+ACTION matching::mchtypcreate(string type, unsigned int max_opponents, string uuid_salt) {
   check(type.size() < 24 && type.size() > 0, "Type must be 24 characters or less");
   check(max_opponents > 1, "A minimum of 2 opponents is required");
   require_auth(_self);
@@ -20,7 +20,7 @@ ACTION matching::createmchtyp(string type, unsigned int max_opponents, string uu
   });
 }
 
-ACTION matching::updatemchtyp(checksum256 match_type_uuid, string type) {
+ACTION matching::mchtypupdate(checksum256 match_type_uuid, string type) {
   check(type.size() < 24 && type.size() > 0, "Type must be 24 characters or less");
   
   match_types mts(_self, _self.value);
@@ -33,7 +33,7 @@ ACTION matching::updatemchtyp(checksum256 match_type_uuid, string type) {
   });
 }
 
-ACTION matching::createmch(checksum256 match_type_uuid, string title, name owner, time_point starts, string uuid_salt) {
+ACTION matching::mchcreate(checksum256 match_type_uuid, string title, name owner, time_point starts, string uuid_salt) {
   check(title.size() <= 64 && title.size() > 0, "Title must be 64 characters or less");
   //check(starts in future)
   require_auth(owner);
@@ -61,7 +61,7 @@ ACTION matching::createmch(checksum256 match_type_uuid, string title, name owner
   });
 }
 
-ACTION matching::updatemch(checksum256 match_uuid, string title, time_point starts) {
+ACTION matching::mchupdate(checksum256 match_uuid, string title, time_point starts) {
   check(title.size() <= 32 && title.size() > 0, "Title must be 32 characters or less");
   //check(starts in future)
   
@@ -77,7 +77,7 @@ ACTION matching::updatemch(checksum256 match_uuid, string title, time_point star
   });
 }
 
-ACTION matching::setstatusmch(checksum256 match_uuid, uint64_t status) {
+ACTION matching::mchsetstatus(checksum256 match_uuid, uint64_t status) {
   matches mchs(_self, _self.value);
   auto mchs_indexed_by_uuid = mchs.template get_index<name("uuid")>();
   auto existing_mch = mchs_indexed_by_uuid.find(match_uuid);
@@ -89,7 +89,7 @@ ACTION matching::setstatusmch(checksum256 match_uuid, uint64_t status) {
   });
 }
 
-ACTION matching::createmchopp(string title, checksum256 match_uuid) {
+ACTION matching::mchcreateopp(string title, checksum256 match_uuid) {
   check(title.size() <= 32 && title.size() > 0, "Title must be 32 characters or less");
   
   matches mchs(_self, _self.value);
