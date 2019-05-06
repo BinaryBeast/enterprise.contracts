@@ -116,7 +116,7 @@ ACTION matching::mchcreateopp(string title, checksum256 match_uuid) {
   });
 }
 
-ACTION matching::mchdeleteopp(string title, checksum256 match_uuid) {
+ACTION matching::mchdeleteopp(checksum256 id, checksum256 match_uuid) {
   matches mchs(_self, _self.value);
   auto mchs_indexed_by_uuid = mchs.template get_index<name("uuid")>();
   auto existing_mch = mchs_indexed_by_uuid.find(match_uuid);
@@ -124,9 +124,7 @@ ACTION matching::mchdeleteopp(string title, checksum256 match_uuid) {
   require_auth(existing_mch->owner);
   
   auto opponents = existing_mch->opponents;
-  
-  checksum256 id_hash = sha256(const_cast<char*>(title.c_str()), title.size() * sizeof(char));
-  auto existing_opp = std::find_if(opponents.begin(), opponents.end(), [&](auto& opp) { return opp.id == id_hash; });
+  auto existing_opp = std::find_if(opponents.begin(), opponents.end(), [&](auto& opp) { return opp.id == id; });
   check(existing_opp != opponents.end(), "Opponent with that title does not exist");
   
   opponents.erase(existing_opp);
