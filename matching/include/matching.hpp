@@ -20,8 +20,7 @@ CONTRACT matching : public contract {
     // Change Match Type
     ACTION mchsetstatus(checksum256 match_uuid, uint64_t status);
     ACTION mchcreateopp(string title, checksum256 match_uuid);
-    // Update Match Opponent
-    // Delete Match Opponent
+    ACTION mchdeleteopp(string title, checksum256 match_uuid);
     // Delete Match
     // Transfer Match Ownership
     // Create Validation Type

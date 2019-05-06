@@ -116,6 +116,26 @@ ACTION matching::mchcreateopp(string title, checksum256 match_uuid) {
   });
 }
 
+ACTION matching::mchdeleteopp(string title, checksum256 match_uuid) {
+  matches mchs(_self, _self.value);
+  auto mchs_indexed_by_uuid = mchs.template get_index<name("uuid")>();
+  auto existing_mch = mchs_indexed_by_uuid.find(match_uuid);
+  check(existing_mch != mchs_indexed_by_uuid.end(), "Match with UUID does not exist");
+  require_auth(existing_mch->owner);
+  
+  auto opponents = existing_mch->opponents;
+  
+  checksum256 id_hash = sha256(const_cast<char*>(title.c_str()), title.size() * sizeof(char));
+  auto existing_opp = std::find_if(opponents.begin(), opponents.end(), [&](auto& opp) { return opp.id == id_hash; });
+  check(existing_opp != opponents.end(), "Opponent with that title does not exist");
+  
+  opponents.erase(existing_opp);
+  
+  mchs_indexed_by_uuid.modify(existing_mch, same_payer, [&](auto& mch) {
+     mch.opponents = opponents;
+  });
+}
+
 // Testing
 ACTION matching::reset() {
   require_auth(_self);
