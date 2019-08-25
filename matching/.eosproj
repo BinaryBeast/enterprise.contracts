@@ -2,16 +2,18 @@
   "main": "src\\matching.cpp",
   "contract": "matching",
   "include": "",
-  "cdt": "",
+  "resource": "",
+  "cdt": "v1.6.2",
   "output": "",
   "scripts": {
     "build": ""
   },
   "deploy": {
+    "target": "both",
     "mainnet": "",
     "kylin": "",
     "jungle": "",
-    "local": "entmatching"
+    "local": "matching1111"
   },
   "test": {
     "npmClient": ""

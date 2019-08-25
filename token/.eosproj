@@ -2,16 +2,18 @@
   "main": "src\\token.cpp",
   "contract": "token",
   "include": "",
-  "cdt": "",
+  "resource": "",
+  "cdt": "v1.6.2",
   "output": "",
   "scripts": {
     "build": ""
   },
   "deploy": {
+    "target": "both",
     "mainnet": "",
     "kylin": "",
-    "jungle": "gre111111111",
-    "local": "gre111111111"
+    "jungle": "",
+    "local": "token1111111"
   },
   "test": {
     "npmClient": ""

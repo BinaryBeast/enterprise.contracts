@@ -1,20 +1,18 @@
 #include <matching.hpp>
 
-ACTION matching::mchtypcreate(string type, unsigned int max_opponents, string uuid_salt) {
+ACTION matching::mchtypcreate(checksum256 match_type_uuid, string type, unsigned int max_opponents) {
   check(type.size() < 24 && type.size() > 0, "Type must be 24 characters or less");
   check(max_opponents > 1, "A minimum of 2 opponents is required");
   require_auth(_self);
   
-  checksum256 uuid_hash = sha256(const_cast<char*>(uuid_salt.c_str()), uuid_salt.size() * sizeof(char));
-  
   match_types mts(_self, _self.value);
   auto indexed_by_uuid = mts.template get_index<name("uuid")>();
-  auto existing_mt = indexed_by_uuid.find(uuid_hash);
+  auto existing_mt = indexed_by_uuid.find(match_type_uuid);
   check(existing_mt == indexed_by_uuid.end(), "Match Type with UUID already exists");
   
   mts.emplace(_self, [&](auto& mt) {
     mt.id = mts.available_primary_key();
-    mt.uuid = uuid_hash;
+    mt.uuid = match_type_uuid;
     mt.type = type;
     mt.max_opponents = max_opponents;
   });
@@ -33,7 +31,7 @@ ACTION matching::mchtypupdate(checksum256 match_type_uuid, string type) {
   });
 }
 
-ACTION matching::mchcreate(checksum256 match_type_uuid, string title, name owner, time_point starts, string uuid_salt) {
+ACTION matching::mchcreate(checksum256 match_uuid, checksum256 match_type_uuid, string title, name owner, time_point starts) {
   check(title.size() <= 64 && title.size() > 0, "Title must be 64 characters or less");
   //check(starts in future)
   require_auth(owner);
@@ -43,16 +41,14 @@ ACTION matching::mchcreate(checksum256 match_type_uuid, string title, name owner
   auto existing_mt = mts_indexed_by_uuid.find(match_type_uuid);
   check(existing_mt != mts_indexed_by_uuid.end(), "Match Type with UUID does not exist");
   
-  checksum256 uuid_hash = sha256(const_cast<char*>(uuid_salt.c_str()), uuid_salt.size() * sizeof(char));
-  
   matches mchs(_self, _self.value);
   auto mchs_indexed_by_uuid = mchs.template get_index<name("uuid")>();
-  auto existing_mch = mchs_indexed_by_uuid.find(uuid_hash);
+  auto existing_mch = mchs_indexed_by_uuid.find(match_uuid);
   check(existing_mch == mchs_indexed_by_uuid.end(), "Match with UUID already exists");
   
   mchs.emplace(_self, [&](auto& mch) {
     mch.id = mchs.available_primary_key();
-    mch.uuid = uuid_hash;
+    mch.uuid = match_uuid;
     mch.match_type_uuid = match_type_uuid;
     mch.title = title;
     mch.owner = owner;
