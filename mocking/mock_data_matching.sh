@@ -13,7 +13,7 @@ cleos push action $contract reset '[]' -p $contract
 
 cleos push action $contract mchtypcreate '["a820ea4f8b60e1599f8aa1ff3aba9db2466738ffcf983e6609e7ab709575d0bb", "Head 2 Head", 2]' -p $contract
 cleos push action $contract mchtypcreate '["06d718ca948754a2b0a6f460630c8c50a1f9488a754a3a0165658d24f329a3ed", "Battle Royale", 100]' -p $contract
-cleos push action $contract mchtypcreate '["a3315824bcdc7bd6e86d2744f3f7f5d7207147c840f9195705b6b8e163b27a6f", "Solo", 1]' -p $contract
+cleos push action $contract mchtypcreate '["a3315824bcdc7bd6e86d2744f3f7f5d7207147c840f9195705b6b8e163b27a6f", "Four Way", 4]' -p $contract
 
 cleos push action $contract mchcreate '["7af12386a82b6337d6b1e4c6a1119e29bb03e6209aa03c70ed3efbb9b74a290c", "a820ea4f8b60e1599f8aa1ff3aba9db2466738ffcf983e6609e7ab709575d0bb", "Enterprise Crew Playoff", '"$testAccount1"', "2019-05-26T15:00:00.000"]' -p $testAccount1
 cleos push action $contract mchsetstatus '["7af12386a82b6337d6b1e4c6a1119e29bb03e6209aa03c70ed3efbb9b74a290c", 1]' -p $testAccount1
