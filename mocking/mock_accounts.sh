@@ -2,6 +2,7 @@ echo "== EOS MOCK - Accounts =="
 
 walletName="eosmock"
 
+# WARNING: The keys are for development purposes only and should not be used in production
 privateKeys=(
     "5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3"   # EOSIO DEV Private Key (eosio contract)
     "5JCxNpx1DNyDrXA8xBQVie2VD5s6afEzaM4zEjVXEnHdFR9uMTb"   # Token (contract)
@@ -20,13 +21,13 @@ do
 done
 
 declare -A accounts=(
-    [token1111111]="EOS5L4TGAKjUPhLACM6ZXpYm6aRQFLPko2zGGaCqhbcGRCDw6FH5j"
-    [rewardspool1]="EOS7syYK6HbNH3ZRj2tf2uLBQMGXxe2z8KaMTsYuANvDDYZrhicF9"
-    [pool21111111]="EOS6t3GW4atHhnKewNGoeUxyRFezXsbD3i81kYRQHrj31KQSLyJUK"
-    [pool31111111]="EOS6CKhVNtnK2n6VbeqBPV9CG5kZhrZuhqLmjmsKLudNMUFzDUwWc"
-    [matching1111]="EOS7j6tvbUJu6bv4QpeVMWrGLjPESBNuoAKh9exX73Qb2DHLQUXP9"
-    [ta1111111111]="EOS7yYcGbp6eRQWuhTG6CDBiUngFQahBFxzMUQmRFAguQhtTVpSsy"
-    [ta2111111111]="EOS61GUXZvmKVzVDnqDJ3LwVnVzF8ZjWKLivwMDb7BLRsYYMMFA8H"
+    [enttoken1111]="EOS5L4TGAKjUPhLACM6ZXpYm6aRQFLPko2zGGaCqhbcGRCDw6FH5j"
+    [entrewpool11]="EOS7syYK6HbNH3ZRj2tf2uLBQMGXxe2z8KaMTsYuANvDDYZrhicF9"
+    [entpool21111]="EOS6t3GW4atHhnKewNGoeUxyRFezXsbD3i81kYRQHrj31KQSLyJUK"
+    [entpool31111]="EOS6CKhVNtnK2n6VbeqBPV9CG5kZhrZuhqLmjmsKLudNMUFzDUwWc"
+    [entmatching1]="EOS7j6tvbUJu6bv4QpeVMWrGLjPESBNuoAKh9exX73Qb2DHLQUXP9"
+    [entta1111111]="EOS7yYcGbp6eRQWuhTG6CDBiUngFQahBFxzMUQmRFAguQhtTVpSsy"
+    [entta2111111]="EOS61GUXZvmKVzVDnqDJ3LwVnVzF8ZjWKLivwMDb7BLRsYYMMFA8H"
 )
 
 echo "Creating accounts..."
